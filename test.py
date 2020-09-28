@@ -3,84 +3,84 @@ from os import getpid
 from datetime import datetime
 from time import sleep
 
-def local_time(counter):
-    return ' (LAMPORT_TIME={}, LOCAL_TIME={})'.format(counter,
+def local_t(cntr):
+    return ' (LAMPORT_TIME={}, LOCAL_TIME={})'.format(cntr,
                                                      datetime.now())
 
-def calc_recv_timestamp(recv_time_stamp, counter):
-    return max(recv_time_stamp, counter) + 1
+def calc_recieve_tstamp(recv_time_stamp, cntr):
+    return max(recv_time_stamp, cntr) + 1
 
-def event(pid, counter):
-    counter[pid] = counter[pid] + 1
+def event(pid, cntr):
+    cntr[pid] = cntr[pid] + 1
     print('Smth happened in {} !'.\
-          format(pid) + local_time(counter))
-    return counter
+          format(pid) + local_t(cntr))
+    return cntr
 
-def send_message(pipe, pid, counter):
-    counter[pid] = counter[pid] + 1
-    pipe.send(('Empty shell', counter))
-    print('Sent from ' + str(pid) + local_time(counter))
-    return counter
+def send_m(pipe, pid, cntr):
+    cntr[pid] = cntr[pid] + 1
+    pipe.send(('Empty shell', cntr))
+    print('Sent from ' + str(pid) + local_t(cntr))
+    return cntr
 
-def recv_message(pipe, pid, counter):
+def recieve_m(pipe, pid, cntr):
     message, timestamp = pipe.recv()
-    counter = calc_recv_timestamp(timestamp, counter)
-    print('Received at ' + str(pid)  + local_time(counter))
-    return counter
+    cntr = calc_recieve_tstamp(timestamp, cntr)
+    print('Received at ' + str(pid)  + local_t(cntr))
+    return cntr
 
-def process_one(pipe12):
+def pr_one(pipe12):
     pid = 0
-    counter = [0, 0, 0]
-    counter = send_message(pipe12, pid, counter)
-    counter = send_message(pipe12, pid, counter)
-    counter  = event(pid, counter)
-    counter = recv_message(pipe12, pid, counter)
-    counter  = event(pid, counter)
-    counter  = event(pid, counter)
-    counter = recv_message(pipe12, pid, counter)
+    cntr = [0, 0, 0]
+    cntr = send_m(pipe12, pid, cntr)
+    cntr = send_m(pipe12, pid, cntr)
+    cntr  = event(pid, cntr)
+    cntr = recieve_m(pipe12, pid, cntr)
+    cntr  = event(pid, cntr)
+    cntr  = event(pid, cntr)
+    cntr = recieve_m(pipe12, pid, cntr)
 
 
-def process_two(pipe21, pipe23):
+def pr_two(pipe21, pipe23):
     pid = 1
-    counter = [0, 0, 0]
-    counter = recv_message(pipe21, pid, counter)
-    counter = recv_message(pipe21, pid, counter)
-    counter = send_message(pipe21, pid, counter)
-    counter = recv_message(pipe23, pid, counter)
-    counter = event(pid, counter)
-    counter = send_message(pipe21, pid, counter)
-    counter = send_message(pipe23, pid, counter)
-    counter = send_message(pipe23, pid, counter)
+    cntr = [0, 0, 0]
+    cntr = recieve_m(pipe21, pid, cntr)
+    cntr = recieve_m(pipe21, pid, cntr)
+    cntr = send_m(pipe21, pid, cntr)
+    cntr = recieve_m(pipe23, pid, cntr)
+    cntr = event(pid, cntr)
+    cntr = send_m(pipe21, pid, cntr)
+    cntr = send_m(pipe23, pid, cntr)
+    cntr = send_m(pipe23, pid, cntr)
 
 
-def process_three(pipe32):
+def pr_three(pipe32):
     pid = 2
-    counter = [0, 0, 0]
-    counter = send_message(pipe32, pid, counter)
-    counter = recv_message(pipe32, pid, counter)
-    counter = event(pid, counter)
-    counter = recv_message(pipe32, pid, counter)
+    cntr = [0, 0, 0]
+    cntr = send_m(pipe32, pid, cntr)
+    cntr = recieve_m(pipe32, pid, cntr)
+    cntr = event(pid, cntr)
+    cntr = recieve_m(pipe32, pid, cntr)
 
 
 
-def calc_recv_timestamp(recv_time_stamp, counter):
-    for id  in range(len(counter)):
-        counter[id] = max(recv_time_stamp[id], counter[id])
-    return counter
+def calc_recieve_tstamp(recv_time_stamp, cntr):
+    for id  in range(len(cntr)):
+        cntr[id] = max(recv_time_stamp[id], cntr[id])
+    return cntr
 
 
 if __name__ == '__main__':
     oneandtwo, twoandone = Pipe()
     twoandthree, threeandtwo = Pipe()
-    process1 = Process(target=process_one,
+    pr1 = Process(target=pr_one,
                        args=(oneandtwo,))
-    process2 = Process(target=process_two,
+    pr2 = Process(target=pr_two,
                        args=(twoandone, twoandthree))
-    process3 = Process(target=process_three,
+    pr3 = Process(target=pr_three,
                        args=(threeandtwo,))
-    process1.start()
-    process2.start()
-    process3.start()
-    process1.join()
-    process2.join()
-    process3.join()
+    pr1.start()
+    pr2.start()
+    pr3.start()
+    pr1.join()
+    pr2.join()
+    pr3.join()
