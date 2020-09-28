@@ -23,6 +23,7 @@ def send_m(pipe, pid, cntr):
     return cntr
 
 def recieve_m(pipe, pid, cntr):
+    cntr[pid] = cntr[pid] + 1
     message, timestamp = pipe.recv()
     cntr = calc_recieve_tstamp(timestamp, cntr)
     print('Received at ' + str(pid)  + local_t(cntr))
