@@ -12,21 +12,17 @@ def calc_recieve_tstamp(recv_time_stamp, cntr):
 
 def event(pid, cntr):
     cntr[pid] = cntr[pid] + 1
-    print('Smth happened in {} !'.\
-          format(pid) + local_t(cntr))
     return cntr
 
 def send_m(pipe, pid, cntr):
     cntr[pid] = cntr[pid] + 1
     pipe.send(('Empty shell', cntr))
-    print('Sent from ' + str(pid) + local_t(cntr))
     return cntr
 
 def recieve_m(pipe, pid, cntr):
     cntr[pid] = cntr[pid] + 1
     message, timestamp = pipe.recv()
     cntr = calc_recieve_tstamp(timestamp, cntr)
-    print('Received at ' + str(pid)  + local_t(cntr))
     return cntr
 
 def pr_one(pipe12):
@@ -39,6 +35,7 @@ def pr_one(pipe12):
     cntr  = event(pid, cntr)
     cntr  = event(pid, cntr)
     cntr = recieve_m(pipe12, pid, cntr)
+    print ('Process A {}'.format(cntr))
 
 
 def pr_two(pipe21, pipe23):
@@ -52,6 +49,8 @@ def pr_two(pipe21, pipe23):
     cntr = send_m(pipe21, pid, cntr)
     cntr = send_m(pipe23, pid, cntr)
     cntr = send_m(pipe23, pid, cntr)
+    print ('Process B {}'.format(cntr))
+
 
 
 def pr_three(pipe32):
@@ -61,6 +60,7 @@ def pr_three(pipe32):
     cntr = recieve_m(pipe32, pid, cntr)
     cntr = event(pid, cntr)
     cntr = recieve_m(pipe32, pid, cntr)
+    print ('Process C {}'.format(cntr))
 
 
 
